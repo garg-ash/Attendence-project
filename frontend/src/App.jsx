@@ -1,29 +1,60 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function App() {
-  const [faculty, setFaculty] = useState("")
+  const [facultyList, setFacultyList] = useState([]);
+  const [selectedFaculty, setSelectedFaculty] = useState("");
+  const [students, setStudents] = useState([]);
 
-  function handleSubmit(e){
-    e.preventDefault()
-    const obj = {}
-    obj.name = name;
+  useEffect(() => {
+    // Fetch the list of faculties on component mount
+    axios.get('http://localhost:8080/getFaculty')
+      .then(response => {
+        setFacultyList(response.data);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }, []);
 
-    axios.get('https://localhost:8080', {...obj})
-    .then(result=>{
-      if(result.data && result.status === 200) window.location.href = "/FacultuSection"
-    })
-    .catch(error=> console.log(error))
+  function handleFacultyChange(e) {
+  
+    
+      axios.get(`http://localhost:8080/getStudentsByFaculty/${e.target.value}`)
+        .then(response => {
+          setStudents(response.data);
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    
+  
   }
+
+  function handleSubmit(e) {
+  
+  }
+
   return (
     <>
-    <h3>Attendance Management</h3>
-    <div className='app'>
-      <form action="" onSubmit={handleSubmit}>
-        <input type="text" placeholder='Enter Faculty Name' name='name'value={faculty} onChange={(e)=>FacultyName(e.target.value)}/>
-      </form>
-      <button type='submit'>Login</button>
-    </div>
+      <h3>Attendance Management</h3>
+      <div className='app'>
+        <form >
+          <select value={selectedFaculty} onChange={handleFacultyChange}>
+            <option value="" disabled>Select Faculty</option>
+            {facultyList.map((faculty, index) => (
+              <option key={index} value={faculty.name}>{faculty.name}</option>
+            ))}
+          </select>
+          {/* <button type='submit'>Show Students</button> */}
+        </form>
+        <h4>Students</h4>
+        <ul>
+          {students.map((student, index) => (
+            <li key={index}>{student.name}</li>
+          ))}
+        </ul>
+      </div>
     </>
-  )
+  );
 }
-
